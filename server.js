@@ -3,15 +3,27 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 const qs = require('qs');
 const tunnel = require('tunnel');
-process.env['NODE_EXTRA_CA_CERTS'] = '/Users/travis.mottershead/src/demo/outbound-route-sandbox.pem';
+const dotenv = require('dotenv');
+dotenv.config();
+console.log(`Outbound route certificate is stored at this path: ${process.env['NODE_EXTRA_CA_CERTS']}`);
 
-VGS_USERNAME="USmNPcPpmbnrEiRTz6m8rhQc";
-VGS_PASSWORD="b542baf5-d6d3-4b68-b492-710b4791c720";
+const VGS_VAULT_ID=process.env.VGS_VAULT_ID;
+const VGS_USERNAME=process.env.VGS_USERNAME;
+const VGS_PASSWORD=process.env.VGS_PASSWORD;
+const STRIPE_KEY=process.env.STRIPE_KEY;
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static('public'))
+
+app.get('/get_vault_id', async (req, res) => {
+    res.setHeader('content-type', 'application/json')
+    res.send({
+        "vault_id": VGS_VAULT_ID,
+    });
+});
 
 app.post('/post', async (req, res) => {
     const creditCardInfo = req.body;
@@ -30,10 +42,12 @@ app.listen(3000, () => {
 });
 
 function getProxyAgent() {
+    const vgs_outbound_url = `${VGS_VAULT_ID}.sandbox.verygoodproxy.com`
+    console.log(`Sending request through outbund Route: ${vgs_outbound_url}`);
     return tunnel.httpsOverHttps({
         proxy: {
-            servername: 'tntfcgkllzg.sandbox.verygoodproxy.com',
-            host: 'tntfcgkllzg.sandbox.verygoodproxy.com',
+            servername: vgs_outbound_url,
+            host: vgs_outbound_url,
             port: 8443,
             proxyAuth: `${VGS_USERNAME}:${VGS_PASSWORD}`
         },
@@ -43,10 +57,13 @@ function getProxyAgent() {
 async function postStripePayment(creditCardInfo, agent) {
     let expiry = creditCardInfo['card-expiration-date'].split('/')
 
+    let buff = new Buffer(STRIPE_KEY+":");
+    let base64Auth = buff.toString('base64');
+
     const instance = axios.create({
         baseURL: 'https://api.stripe.com',
         headers: {
-            'authorization': 'Basic c2tfdGVzdF81MUxyczZDSzZvcGpVZ2VTbUZIUmVYMTRlQk1jYm9mQ0pyVU9pc0dUQzdBU3BrZkZNcUQ2RXlzYnM4M3FCQzEyWVpFclYzbnYxUGc0VVR5OVdSaFBSVlVwUTAwbzdjVXJWOEk6',
+            'authorization': `Basic ${base64Auth}`,
         },
         httpsAgent: agent,
     });
