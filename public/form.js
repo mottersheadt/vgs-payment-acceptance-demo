@@ -52,6 +52,15 @@ async function setUpApp() {
     autoComplete: "cc-csc",
     css
   });
+  // Create a hidden form field
+  form.field('#vgs-session-id', {
+    name: "vgs-session-id",
+    type: "text",
+    autoComplete: "email",
+    css: {display: 'none'},
+    // Provide your own trace ID value here...
+    defaultValue: "70593"
+  });
   
   document.addEventListener('submit', (e) => {
     e.preventDefault();

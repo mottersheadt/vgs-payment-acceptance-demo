@@ -30,10 +30,10 @@ app.post('/post', async (req, res) => {
     console.log("Received Tokenized Card Info:");
     console.log(creditCardInfo);
     let response = req.body;
-    response.message = "Credit card information received. Echoing back request body.";
+    response.message = "Credit card information received on server. Echoing back request body.";
     
-    let agent = getProxyAgent();
-    response = await postStripePayment(creditCardInfo, agent)
+    // let agent = getProxyAgent();
+    // response = await postStripePayment(creditCardInfo, agent)
 
     res.send({"response": response});
 });
