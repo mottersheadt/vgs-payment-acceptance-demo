@@ -11,38 +11,57 @@
   <!-- Image and text -->
   <nav class="navbar navbar-dark" style="background: #324152">
     <a class="navbar-brand" href="#">
-      <img src="/images/vgs-logo-white.png" width="200"
-        class="d-inline-block align-top" alt="">
+      <img src="/images/vgs-logo-white.png" width="200" class="d-inline-block align-top" alt="">
     </a>
   </nav>
   <div class="container pt-4">
     <div class="row">
       <div class="col-md">
         <h1>Payment Details</h1>
+        VGS Collect can accept all major credit and debit cards. When this form is submitted, it will forward through a VGS inbound route.
         <form class="mt-4">
+          <div class="card-logos d-flex justify-content-between mb-2">
+            <div>
+              <span class="card-logo visa"></span>
+            </div>
+            <div>
+              <span class="card-logo mc"></span>
+            </div>
+            <div>
+              <span class="card-logo amex"></span>
+            </div>
+            <div>
+              <span class="card-logo discover"></span>
+            </div>
+            <div>
+              <span class="card-logo jcb"></span>
+            </div>
+            <div>
+              <span class="card-logo diners-club"></span>
+            </div>
+            <div>
+              <span class="card-logo union-pay"></span>
+            </div>
+          </div>
           <div>
-            <label>Cardholder Name:</label>
             <div id="cardholder-name" class="field-wrapper"></div>
           </div>
           <div>
-            <label>Card number:</label>
             <div id="card-number" class="field-wrapper"></div>
           </div>
           <div>
-            <label>Expiration Date:</label>
             <div id="card-expiration-date" class="field-wrapper"></div>
           </div>
           <div>
-            <label>Card Security Code:</label>
             <div id="card-security-code" class="field-wrapper"></div>
           </div>
-          <button class="btn btn-primary" type="submit">Submit</button>
+          <button class="btn btn-primary" type="submit">Post Payment</button>
         </form>
       </div>
       <div class="col bg-light">
         <h3 class="mt-2">Response</h3>
         <div id="loading" class="text-center pt-3 d-none">
-          <img src="/images/loading-gif.gif" alt="waiting for response" width="50px"/>
+          <img src="/images/loading-gif.gif" alt="waiting for response" width="50px" />
         </div>
         <pre id="response"></pre>
       </div>

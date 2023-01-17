@@ -5,13 +5,18 @@ async function setUpApp() {
   const form = window.VGSCollect.create(APP_CONFIG.vault_id, 'sandbox', (state) => {});
 
   const css = {
-    "font-size": "20px",
-    "color": "#1f25deff",
-    "font-family": "\"Arial\", sans-serif",
+    "vertical-align": "middle",
+    "white-space": "normal",
+    "background": "none",
+    "font-family": "sofia, arial, sans-serif",
+    "font-size": "16px",
+    "color": "rgb(34, 25, 36)",
+    "line-height": "normal",
+    "padding": "0px 1em",
+    "box-sizing": "border-box",
     "&::placeholder": {
-      "color": "#C8D0DB"
+      "color": "#6A6A6A"
     },
-    "font-weight": "100"
   };
   
   form.field('#cardholder-name', {
