@@ -18,13 +18,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'))
 
-app.get('/get_vault_id', async (req, res) => {
-    res.setHeader('content-type', 'application/json')
-    res.send({
-        "vault_id": VGS_VAULT_ID,
-    });
-});
-
 app.post('/post', async (req, res) => {
     const creditCardInfo = req.body;
     console.log("Received Tokenized Card Info:");
@@ -36,6 +29,13 @@ app.post('/post', async (req, res) => {
     // response = await postStripePayment(creditCardInfo, agent)
 
     res.send({"response": response});
+});
+
+app.get('/get_vault_id', async (req, res) => {
+    res.setHeader('content-type', 'application/json')
+    res.send({
+        "vault_id": VGS_VAULT_ID,
+    });
 });
 
 app.listen(3000, () => {
