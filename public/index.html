@@ -23,7 +23,7 @@
           When this form is submitted, it will send the data to a VGS Inbound Route, which will tokenize the sensitive data elements before forwarding the sanitized data to your server.
         </p>
         <form class="mt-4 mb-4">
-          <div class="card-logos d-flex justify-content-between mb-2">
+          <div class="card-logos d-flex justify-content-between flex-wrap mb-2">
             <div>
               <span class="card-logo visa"></span>
             </div>
@@ -58,24 +58,41 @@
           <div>
             <div id="card-security-code" class="field-wrapper"></div>
           </div>
+          <h4>Billing Address</h4>
+          <div>
+            <div id="billing-country" class="field-wrapper"></div>
+          </div>
+          <div>
+            <div id="billing-state" class="field-wrapper"></div>
+          </div>
+          <div>
+            <div id="billing-city" class="field-wrapper"></div>
+          </div>
+          <div>
+            <div id="billing-address" class="field-wrapper"></div>
+          </div>
+          <h4>Amount</h4>
+          <div>
+            <div id="amount" class="field-wrapper"></div>
+          </div>
           <div hidden>
             <div id="vgs-session-id" ></div>
           </div>
-          <button class="btn btn-primary" type="submit">Post Payment</button>
+          <button class="btn btn-primary" type="button" id="pay">Pay</button>
         </form>
       </div>
-      <div class="col bg-light">
-        <h3 class="mt-2">Response</h3>
+    </div>
+    <div id="logo-wrapper" class="d-none">
+      <h3>Processed By: <img style="padding-left: 10px; width: 100px;" src="" id="logo" alt="logo" /></h3>
+    </div>
         <div id="loading" class="text-center pt-3 d-none">
           <img src="/images/loading-gif.gif" alt="waiting for response" width="50px" />
         </div>
         <pre id="response"></pre>
       </div>
-    </div>
-  </div>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-  <script src="https://js.verygoodvault.com/vgs-collect/2.5.0/vgs-collect.js"></script>
+  <script src="https://js.verygoodvault.com/vgs-collect/2.14.0/vgs-collect.js"></script>
   <script src="./form.js" async></script>
 </body>
 
