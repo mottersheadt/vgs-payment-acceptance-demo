@@ -67,8 +67,10 @@ app.get('/get_vault_id', async (req, res) => {
     });
 });
 
-app.listen(3000, () => {
-    console.log('Server started on port 3000');
+let port = process.env._ && process.env._.indexOf("heroku") !== -1 ? 80 : 3000
+
+app.listen(port, () => {
+    console.log(`Server started on port ${port}`);
 });
 
 function getProxyAgent() {
