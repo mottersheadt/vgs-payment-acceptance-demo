@@ -1,0 +1,36 @@
+{
+  "name": "VGS Payment Acceptance Sample App",
+  "description": "Use VGS to collect and protect sensitive card data and orchestrate payments to mulitple processors.",
+  "repository": "https://github.com/vgs-samples/vgs-payment-acceptance-demo",
+  "logo": "https://www.verygoodsecurity.com/img/press-and-assets/meta-logo.png",
+  "env": {
+    "VGS_VAULT_ID": {
+      "description": "Enter your VGS vault ID",
+      "required": true
+    },
+    "VGS_USERNAME": {
+      "description": "Vault Access Credentials Username. This is used to connect to the outbound route proxy.",
+      "required": true
+    },
+    "VGS_PASSWORD": {
+      "description": "Vault Access Credentials Password. This is used to connect to the outbound route proxy.",
+      "required": true
+    },
+    "STRIPE_KEY": {
+      "description": "Stripe secret key. This can be found in the Stripe portal.",
+      "required": true
+    },
+    "ADYEN_MERCHANT_ACCOUNT": {
+      "description": "Adyen merchant account. This can be found in the Adyen portal.",
+      "required": true
+    },
+    "ADYEN_KEY": {
+      "description": "Adyen secret key. This can be found in the Adyen portal.",
+      "required": true
+    },
+    "HEARTLAND_KEY": {
+      "description": "Heartland secret key. This can be found in the Heartland portal.",
+      "required": true
+    }
+  }
+}
