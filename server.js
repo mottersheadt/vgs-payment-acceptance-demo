@@ -5,6 +5,9 @@ const qs = require('qs');
 const tunnel = require('tunnel');
 const dotenv = require('dotenv');
 const { response } = require('express');
+var cors = require('cors')
+
+
 dotenv.config();
 console.log(`Outbound route certificate is stored at this path: ${process.env['NODE_EXTRA_CA_CERTS']}`);
 
@@ -15,9 +18,11 @@ const STRIPE_KEY=process.env.STRIPE_KEY;
 const ADYEN_MERCHANT_ACCOUNT=process.env.ADYEN_MERCHANT_ACCOUNT;
 const ADYEN_KEY=process.env.ADYEN_KEY;
 const HEARTLAND_KEY=process.env.HEARTLAND_KEY;
+const BASE_DOMAIN=process.env.BASE_DOMAIN;
 
 const app = express();
 
+app.use(cors())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static('public'))
@@ -32,7 +37,37 @@ app.post('/tokenize', async (req, res) => {
     res.send(response);
 });
 
+
+app.post('/encrypted-payment', async (req, res) => {
+    console.log("!!!Encrypted Payment Incoming!!!")
+    let response = await orchestratePayment(req)
+    res.send({"response": response});
+})
+
 app.post('/post', async (req, res) => {
+    let response = await orchestratePayment(req)
+    res.send({"response": response});
+});
+
+app.get('/get_vault_id', async (req, res) => {
+    res.setHeader('content-type', 'application/json')
+    res.send({
+        "vault_id": VGS_VAULT_ID,
+    });
+});
+
+app.get('/get_stripe_payment_intent/:paymentIntent', async (req, res) => {
+    let response = await getStripePaymentIntent(req.params.paymentIntent)
+    res.send({"response": response});
+});
+
+let port = process.env._ && process.env._.indexOf("heroku") !== -1 ? 80 : 3000
+
+app.listen(port, () => {
+    console.log(`Server started on port ${port}`);
+});
+
+async function orchestratePayment(req) {
     const creditCardInfo = req.body;
     console.log("Received Tokenized Card Info:");
     console.log(creditCardInfo);
@@ -57,21 +92,8 @@ app.post('/post', async (req, res) => {
         responses.push(await postStripePayment(creditCardInfo))
     }
 
-    res.send({"response": responses});
-});
-
-app.get('/get_vault_id', async (req, res) => {
-    res.setHeader('content-type', 'application/json')
-    res.send({
-        "vault_id": VGS_VAULT_ID,
-    });
-});
-
-let port = process.env._ && process.env._.indexOf("heroku") !== -1 ? 80 : 3000
-
-app.listen(port, () => {
-    console.log(`Server started on port ${port}`);
-});
+    return responses;
+}
 
 function getProxyAgent() {
     const vgs_outbound_url = `${VGS_VAULT_ID}.sandbox.verygoodproxy.com`
@@ -102,25 +124,38 @@ async function postStripePayment(creditCardInfo) {
     });
     
     try {
-        let response = await instance.post('/v1/charges', qs.stringify({
-            amount: '100',
-            currency: 'usd',
-            description: 'Example Stripe Charge',
+        let pm_response = await instance.post('/v1/payment_methods', qs.stringify({
+            type: 'card',
             card: {
                 number: creditCardInfo['card-number'],
                 cvc: creditCardInfo['card-security-code'],
                 exp_month: expiry[0].trim(),
-                exp_year: expiry[1].trim(),
-                name: creditCardInfo['cardholder-name']
+                exp_year: expiry[1].trim()
             }
         }));
-        console.log(response.data)
+        console.log(pm_response.data)
+
+        let pi_response = await instance.post('/v1/payment_intents', qs.stringify({
+            amount: 100,
+            currency: 'usd',
+            payment_method: pm_response.data.id,
+            return_url: creditCardInfo.do_three_ds ? 'https://' + BASE_DOMAIN + '/3ds_confirm.html' : null,
+            payment_method_options: {
+                card: {
+                    request_three_d_secure: creditCardInfo.do_three_ds ? 'any' : null
+                }
+            },
+            confirm: true
+        }));
+        console.log(pi_response.data);
+
         return {
-            success: response.data.status == 'succeeded',
-            id: response.data.id,
-            status: response.data.status,
+            success: pi_response.data.status == 'succeeded',
+            id: pi_response.data.id,
+            status: pi_response.data.status,
             psp: 'stripe',
-            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1280px-Stripe_Logo%2C_revised_2016.svg.png'
+            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1280px-Stripe_Logo%2C_revised_2016.svg.png',
+            data: pi_response.data
         }
     }
     catch(error) {
@@ -130,7 +165,8 @@ async function postStripePayment(creditCardInfo) {
             status: 'failure',
             psp: 'stripe',
             error: error.message,
-            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1280px-Stripe_Logo%2C_revised_2016.svg.png'
+            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1280px-Stripe_Logo%2C_revised_2016.svg.png',
+            data: error.response.data.error
         }
     }
 }
@@ -175,7 +211,8 @@ async function postAdyenPayment(creditCardInfo) {
             id: response.data.pspReference,
             status: response.data.resultCode,
             psp: 'adyen',
-            logo: 'https://adyen.getbynder.com/transform/042b7c58-5dbe-486a-aed8-30136a44a080/brandguidelines-logo2'
+            logo: 'https://adyen.getbynder.com/transform/042b7c58-5dbe-486a-aed8-30136a44a080/brandguidelines-logo2',
+            data: response.data
         }
     }
     catch(error) {
@@ -185,7 +222,7 @@ async function postAdyenPayment(creditCardInfo) {
             status: 'failure',
             psp: 'adyen',
             error: error.message,
-            logo: 'https://adyen.getbynder.com/transform/042b7c58-5dbe-486a-aed8-30136a44a080/brandguidelines-logo2'
+            logo: 'https://adyen.getbynder.com/transform/042b7c58-5dbe-486a-aed8-30136a44a080/brandguidelines-logo2',
         }
     }
 }
@@ -258,7 +295,8 @@ async function postHeartlandPayment(creditCardInfo)
             id: response.data.pspReference,
             status: response.data.resultCode,
             psp: 'heartland',
-            logo: 'https://images.expertmarket.co.uk/wp-content/uploads/sites/2/2020/03/heartland-payment-systems-logo.jpg'
+            logo: 'https://images.expertmarket.co.uk/wp-content/uploads/sites/2/2020/03/heartland-payment-systems-logo.jpg',
+            data: response.data
         }
     }
     catch(error) {
@@ -268,7 +306,40 @@ async function postHeartlandPayment(creditCardInfo)
             status: 'failure',
             psp: 'heartland',
             error: error.message,
-            logo: 'https://images.expertmarket.co.uk/wp-content/uploads/sites/2/2020/03/heartland-payment-systems-logo.jpg'
+            logo: 'https://images.expertmarket.co.uk/wp-content/uploads/sites/2/2020/03/heartland-payment-systems-logo.jpg',
+        }
+    }
+}
+
+async function getStripePaymentIntent(paymentIntent)
+{
+    let buff = new Buffer(STRIPE_KEY+":");
+    let base64Auth = buff.toString('base64');
+    const instance = axios.create({
+        baseURL: 'https://api.stripe.com',
+        headers: {
+            'authorization': `Basic ${base64Auth}`,
+        },
+    });
+    
+    try {
+        let response = await instance.get('/v1/payment_intents/'+paymentIntent);
+        console.log(response.data)
+        return {
+            status: response.data.status == 'succeeded',
+            psp: 'stripe',
+            logo: 'https://images.expertmarket.co.uk/wp-content/uploads/sites/2/2020/03/heartland-payment-systems-logo.jpg',
+            data: response.data
+        }
+    }
+    catch(error) {
+        console.log('FAILURE!');
+        console.log(error);
+        return {
+            status: 'failure',
+            psp: 'stripe',
+            error: error.message,
+            logo: 'https://images.expertmarket.co.uk/wp-content/uploads/sites/2/2020/03/heartland-payment-systems-logo.jpg',
         }
     }
 }

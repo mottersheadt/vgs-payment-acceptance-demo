@@ -60,13 +60,13 @@ label {
 }
 
 .card-logo.visa {
-  background: url(/images/visa.jpg) no-repeat center center;
+  background: url(/images/visa.jpg) no-repeat center center white;
   background-size: auto 16px;
   padding: 16px;
 }
 
 .card-logo.mc {
-  background: url(/images/mc.png) no-repeat center center;
+  background: url(/images/mc.png) no-repeat center center white;
   background-size: auto 25px;
   padding: 16px;
 }
@@ -79,21 +79,42 @@ label {
 }
 
 .card-logo.discover {
-  background: url(/images/discover.jpg) no-repeat center center;
+  background: url(/images/discover.jpg) no-repeat center center white;
   background-size: contain;
 }
 
 .card-logo.diners-club {
-  background: url(/images/diners-club.png) no-repeat center center;
+  background: url(/images/diners-club.png) no-repeat center center white;
   background-size: auto 16px;
 }
 
 .card-logo.jcb {
-  background: url(/images/jcb.png) no-repeat center center;
+  background: url(/images/jcb.png) no-repeat center center white;
   background-size: auto 27px;
 }
 
 .card-logo.union-pay {
-  background: url(/images/union-pay.png) no-repeat center center;
+  background: url(/images/union-pay.png) no-repeat center center white;
   background-size: auto 24px;
+}
+
+#processed-by {
+  padding: 30px 40px;
+  background: #e6e6e6;
+  color: black;
+  border-radius: 30px;
+}
+
+#three-ds-wrapper {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  height: 100%;
+  top: 0;
+  padding: 60px 200px;
+  background: #8080807d;
+}
+
+#three-ds-wrapper iframe {
+  border-width: 0;
 }
